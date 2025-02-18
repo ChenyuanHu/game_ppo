@@ -5,7 +5,7 @@ import numpy as np
 from torch.distributions import Categorical
 
 class GRPO:
-    def __init__(self, state_dim, action_dim, lr=0.002, epsilon=0.2, epochs=8, group_size=64):
+    def __init__(self, state_dim, action_dim, lr=0.002, epsilon=0.2, epochs=8, group_size=256):
         self.policy = nn.Sequential(
             nn.Linear(state_dim, 64),
             nn.Tanh(),
