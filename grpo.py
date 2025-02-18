@@ -63,7 +63,7 @@ class GRPO:
         log_probs = torch.FloatTensor(log_probs)
         dones = torch.FloatTensor(dones)
         
-        R = self.get_return(rewards)
+        R = self.get_return(rewards) - (1 - dones[-1]) * 1000
         self.add_return(R)
         avg_R = self.get_avg_return()
         std_R = self.get_std_return()
