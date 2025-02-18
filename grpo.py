@@ -5,7 +5,7 @@ import numpy as np
 from torch.distributions import Categorical
 
 class GRPO:
-    def __init__(self, state_dim, action_dim, lr=0.002, gamma=0.99, epsilon=0.2, epochs=4, group_size=100):
+    def __init__(self, state_dim, action_dim, lr=0.002, epsilon=0.2, epochs=4, group_size=64):
         self.policy = nn.Sequential(
             nn.Linear(state_dim, 64),
             nn.Tanh(),
@@ -17,7 +17,6 @@ class GRPO:
         
         self.optimizer = optim.Adam(list(self.policy.parameters()), lr=lr)
         
-        self.gamma = gamma
         self.epsilon = epsilon
         self.epochs = epochs
 
@@ -30,9 +29,13 @@ class GRPO:
         if len(self.returns_group) > self.group_size:
             self.returns_group.pop(0)
             
-    def get_average_return(self):
+    def get_avg_return(self):
         """获取滑动窗口中Return的平均值"""
         return np.mean(self.returns_group)
+
+    def get_std_return(self):
+        """获取滑动窗口中Return的标准差"""
+        return np.std(self.returns_group)
         
     def get_action(self, state):
         if isinstance(state, np.ndarray):
@@ -44,18 +47,16 @@ class GRPO:
         action = dist.sample()
         return action.item(), dist.log_prob(action)
 
-    def get_return(self, rewards, dones):
+    def get_return(self, rewards):
         # 将输入数据转换为张量
         rewards = torch.FloatTensor(rewards)
-        dones = torch.FloatTensor(dones)
 
-        R = rewards[-1]
-        
-        for r, done in zip(reversed(rewards.tolist()), reversed(dones.tolist())):
+        R = 0
+        for r in rewards.tolist():
             R += r
 
         return R
-    
+
     def update(self, states, actions, rewards, log_probs, next_states, dones):
         # 将输入数据转换为张量
         states = torch.FloatTensor(np.array(states))
@@ -65,18 +66,17 @@ class GRPO:
         log_probs = torch.FloatTensor(log_probs)
         dones = torch.FloatTensor(dones)
         
-        R = self.get_return(rewards, dones)
+        R = self.get_return(rewards)
         self.add_return(R)
-        avg_R = self.get_average_return()
+        avg_R = self.get_avg_return()
+        std_R = self.get_std_return()
+
+        R = (R - avg_R) / (std_R + 1e-8)
         
-        advantages = []
-        for r, done in zip(reversed(rewards.tolist()), reversed(dones.tolist())):
-            advantage = R - avg_R
-            advantages.insert(0, advantage)
-            
+        advantages = [R] * len(rewards)
+
         advantages = torch.FloatTensor(advantages)
         
-        # PPO更新
         for _ in range(self.epochs):
             current_probs = self.policy(states)
             dist = Categorical(current_probs)

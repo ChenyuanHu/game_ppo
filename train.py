@@ -2,6 +2,7 @@ import gym
 import numpy as np
 import torch
 from ppo import PPO
+from grpo import GRPO
 import matplotlib.pyplot as plt
 
 # 创建环境
@@ -10,7 +11,8 @@ state_dim = env.observation_space.shape[0]  # 8维状态空间
 action_dim = env.action_space.n  # 4维动作空间
 
 # 初始化PPO代理
-agent = PPO(state_dim, action_dim)
+# agent = PPO(state_dim, action_dim)
+agent = GRPO(state_dim, action_dim)
 
 # 训练参数
 episodes = 10000  # 增加训练回合数
@@ -60,7 +62,8 @@ for episode in range(episodes):
     if episode_reward > best_reward:
         best_reward = episode_reward
         torch.save(agent.policy.state_dict(), 'best_policy.pth')
-        torch.save(agent.value.state_dict(), 'best_value.pth')
+        if hasattr(agent, 'value'):
+            torch.save(agent.value.state_dict(), 'best_value.pth')
     
     if (episode + 1) % 10 == 0:
         avg_reward = np.mean(episode_rewards[-10:])
@@ -77,4 +80,5 @@ plt.close()
 
 # 保存最终模型
 torch.save(agent.policy.state_dict(), 'final_policy.pth')
-torch.save(agent.value.state_dict(), 'final_value.pth') 
+if hasattr(agent, 'value'):
+    torch.save(agent.value.state_dict(), 'final_value.pth') 
