@@ -2,6 +2,7 @@ import gym
 import torch
 import numpy as np
 from ppo import PPO
+from grpo import GRPO
 import time
 
 # 创建环境
@@ -10,7 +11,8 @@ state_dim = env.observation_space.shape[0]  # 8维状态空间
 action_dim = env.action_space.n  # 4维动作空间
 
 # 初始化代理
-agent = PPO(state_dim, action_dim)
+# agent = PPO(state_dim, action_dim)
+agent = GRPO(state_dim, action_dim)
 
 # 加载训练好的模型（尝试加载最佳模型，如果失败则加载最终模型）
 try:
