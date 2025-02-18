@@ -48,9 +48,6 @@ class GRPO:
         return action.item(), dist.log_prob(action)
 
     def get_return(self, rewards):
-        # 将输入数据转换为张量
-        rewards = torch.FloatTensor(rewards)
-
         R = 0
         for r in rewards.tolist():
             R += r
