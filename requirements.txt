@@ -3,4 +3,6 @@ gym==0.26.2
 numpy==1.24.3
 matplotlib==3.7.1
 pygame==2.5.2
-box2d-py==2.3.5 
+box2d-py==2.3.5
+gym-super-mario-bros==7.4.0
+nes-py==8.2.1 

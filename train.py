@@ -11,8 +11,8 @@ state_dim = env.observation_space.shape[0]  # 8维状态空间
 action_dim = env.action_space.n  # 4维动作空间
 
 # 初始化PPO代理
-# agent = PPO(state_dim, action_dim)
-agent = GRPO(state_dim, action_dim)
+agent = PPO(state_dim, action_dim)
+# agent = GRPO(state_dim, action_dim)
 
 # 训练参数
 episodes = 10000  # 增加训练回合数
